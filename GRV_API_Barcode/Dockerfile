@@ -18,7 +18,15 @@ RUN dotnet publish "GRV_API_Barcode.csproj" -c Release -o /app/publish /p:UseApp
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-RUN apt-get update
-RUN DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends libc6-dev libgdiplus
+RUN apt-get update && \
+    apt-get install -y fontconfig libc6-dev libgdiplus
+#RUN apt-get update
+#RUN DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends libc6-dev libgdiplus fontconfig
+#RUN mkdir -p /usr/share/fonts/truetype/
+#COPY --chown=104:106 fonts /usr/share/fonts/truetype/
+#RUN install -m644 *.ttf /usr/share/fonts/truetype/
+#RUN rm ./*.ttf
+#RUN fc-cache -f -v
+#RUN fc-list
 ENTRYPOINT ["dotnet", "GRV_API_Barcode.dll"]
 

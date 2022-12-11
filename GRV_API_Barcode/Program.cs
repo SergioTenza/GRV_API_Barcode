@@ -1,3 +1,5 @@
+using NetBarcode;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,29 +16,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-var summaries = new[]
+app.MapGet("/", () =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return Results.Ok("Hello Mario! The princess is in another Castle.");
 })
-.WithName("GetWeatherForecast")
+.WithName("Home")
+.WithOpenApi();
+
+app.MapGet("api/v1/barcode/{code}", (string code) =>
+{
+    var barcode = new Barcode(code,true);
+    var value = barcode.GetBase64Image();
+    return Results.Ok(value);
+})
+.WithName("GetBarcode")
 .WithOpenApi();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
