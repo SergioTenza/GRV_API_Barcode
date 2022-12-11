@@ -3,11 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33103.201
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GRV_API_Barcode", "GRV_API_Barcode\GRV_API_Barcode.csproj", "{CF0B3FA1-2C4B-46BC-8A8F-E26063ABCDC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GRV_API_Barcode", "GRV_API_Barcode\GRV_API_Barcode.csproj", "{CF0B3FA1-2C4B-46BC-8A8F-E26063ABCDC2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{785B3871-CCFF-45D8-8BFA-0FD8553C8D06}"
 	ProjectSection(SolutionItems) = preProject
 		.http = .http
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Barcode DockerFile", "Barcode DockerFile", "{86801EDF-8D43-4749-A981-C3CD7013B025}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\..\Desktop\Proyectos\dockerfiles\Barcode\Dockerfile = ..\..\..\..\Desktop\Proyectos\dockerfiles\Barcode\Dockerfile
 	EndProjectSection
 EndProject
 Global
