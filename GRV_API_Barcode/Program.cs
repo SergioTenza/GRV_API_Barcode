@@ -28,7 +28,7 @@ app.MapGet("/", () =>
 
 app.MapGet("api/v1/barcode/{code}", (string code) =>
 {
-    var barcode = new Barcode(code,true,100,50);    
+    var barcode = new Barcode(code,true,200,100);    
     var image = barcode.GetImage();
     image.Mutate(x => x.Rotate(90));
     using MemoryStream memoryStream = new MemoryStream();
