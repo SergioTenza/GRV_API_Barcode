@@ -1,4 +1,7 @@
 using NetBarcode;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +28,12 @@ app.MapGet("/", () =>
 
 app.MapGet("api/v1/barcode/{code}", (string code) =>
 {
-    var barcode = new Barcode(code,true);
-    var value = barcode.GetBase64Image();
+    var barcode = new Barcode(code,true,100,50);    
+    var image = barcode.GetImage();
+    image.Mutate(x => x.Rotate(90));
+    using MemoryStream memoryStream = new MemoryStream();
+    image.Save(memoryStream, new PngEncoder());
+    var value = Convert.ToBase64String(memoryStream.ToArray());
     return Results.Ok(value);
 })
 .WithName("GetBarcode")
