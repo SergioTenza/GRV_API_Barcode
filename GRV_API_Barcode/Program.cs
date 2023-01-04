@@ -1,40 +1,74 @@
-using NetBarcode;
-using SixLabors.ImageSharp.Formats.Png;
+using Barcoded;
+using Serilog;
+using Serilog.Events;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Processors.Transforms;
 
+Log.Logger = new LoggerConfiguration()
+  .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+  .Enrich.FromLogContext()
+  .WriteTo.Console()
+  .CreateBootstrapLogger();
+
+Log.Information("Starting Web Host Barcodes...");
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors();
+builder.Host.UseSerilog((context, services, configuration) => configuration
+   .ReadFrom.Configuration(context.Configuration)
+   .ReadFrom.Services(services)
+   .Enrich.FromLogContext());
 
 var app = builder.Build();
+app.UseSerilogRequestLogging(configure =>
+{
+    configure.MessageTemplate = "HTTP {RequestMethod} {RequestPath} ({UserId}) responded {StatusCode} in {Elapsed:0.0000}ms";
+});
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 app.MapGet("/", () =>
 {
-    return Results.Ok("Hello Mario! The princess is in another Castle.");
+    return Results.Ok("GRV_API_BARCODES.");
 })
 .WithName("Home")
 .WithOpenApi();
 
-app.MapGet("api/v1/barcode/{code}", (string code) =>
+app.MapGet("api/v1/barcode/{code}", (string code, int rotation) =>
 {
-    var barcode = new Barcode(code,true,200,100);    
-    var image = barcode.GetImage();
-    image.Mutate(x => x.Rotate(90));
+
+    var codeClean = code.Replace('Ê', ' ').TrimStart();
+
+    LinearBarcode newBarcode = new LinearBarcode(codeClean, Symbology.GS1128)
+    {
+        Encoder =
+        {
+            Dpi = 300,
+            BarcodeHeight = 200,
+        }
+    };
+    ///
+    /// Si es necesario mostrar la etiqueta en formato leible humano
+    ///
+    //var codeSub = code.Replace("Ê9906", "(9906)");
+    //newBarcode.Encoder.HumanReadableValue = codeSub;
+    //newBarcode.Encoder.SetHumanReadablePosition("Above");
+    //newBarcode.Encoder.SetHumanReadableFont("Arial", 8);
+    newBarcode.Encoder.ShowEncoding = false;
+    var image = newBarcode.SaveImage("JPG");
+    Image img = Image.Load(image);
+    img.Mutate(x => x.Rotate(rotation));
     using MemoryStream memoryStream = new MemoryStream();
-    image.Save(memoryStream, new PngEncoder());
-    var value = Convert.ToBase64String(memoryStream.ToArray());
-    return Results.Ok(value);
+    img.Save(memoryStream, new JpegEncoder());
+    return Results.Bytes(memoryStream.ToArray(), "image/jpeg");
 })
 .WithName("GetBarcode")
 .WithOpenApi();
